@@ -13,9 +13,7 @@ fn key_up(_key: Keycode) {
 
 }
 
-fn key_down(key: Keycode, player: &SoundPlayer) -> Result<(), Box<dyn Error>> {
-    println!("{}", key);
-
+fn key_down(_key: Keycode, player: &SoundPlayer) -> Result<(), Box<dyn Error>> {
     player.play()?;
 
     Ok(())
@@ -58,6 +56,6 @@ fn main() {
         }
 
         // Check for key up events
-        thread::sleep(Duration::from_millis(3));
+        thread::sleep(Duration::from_millis(1));
     }
 }
