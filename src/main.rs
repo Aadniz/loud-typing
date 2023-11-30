@@ -55,7 +55,6 @@ fn main() {
             }
         }
 
-        // Check for key up events
         thread::sleep(Duration::from_millis(1));
     }
 }
