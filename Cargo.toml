@@ -1,0 +1,13 @@
+[package]
+name = "villager-noises"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+inputbot = "0.6"
+rodio = "0.17"
+device_query = "1.1"
+time = "0.3.30"
+rand = "0.8.5"
