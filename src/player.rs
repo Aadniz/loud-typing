@@ -3,14 +3,16 @@ use std::fs;
 use std::fs::{File, read_dir};
 use std::io::{BufReader};
 use std::path::Path;
+use std::time::Duration;
+use metadata::MediaFileMetadata;
 use rodio::{Decoder, OutputStream, OutputStreamHandle, Source};
 use rand::seq::SliceRandom;
-use rodio::source::Buffered;
+use rodio::source::{Buffered, SamplesConverter};
 
 pub struct SoundPlayer {
     _stream: OutputStream,
     handle: OutputStreamHandle,
-    audio_sources: Vec<Buffered<Decoder<BufReader<fs::File>>>>,
+    audio_sources: Vec<SamplesConverter<Buffered<Decoder<BufReader<File>>>, f32>>,
 }
 
 impl SoundPlayer {
@@ -25,12 +27,14 @@ impl SoundPlayer {
                 for entry in read_dir(path)? {
                     let entry = entry?;
                     let path = entry.path();
-                    if path.is_file() {
-                        Self::process_file(&path, &mut sources)?;
+                    if let Ok(a) = Self::process_file(&path) {
+                        sources.push(a);
                     }
                 }
-            } else if path.is_file() {
-                Self::process_file(&path, &mut sources)?;
+            }else {
+                if let Ok(a) = Self::process_file(&path) {
+                    sources.push(a);
+                }
             }
         }
 
@@ -43,19 +47,41 @@ impl SoundPlayer {
 
     pub fn play(&self) -> Result<(), Box<dyn Error>> {
         if let Some(source) = self.audio_sources.choose(&mut rand::thread_rng()) {
-            self.handle.play_raw(source.clone().convert_samples())?;
+            self.handle.play_raw(source.clone())?;
         }
 
         Ok(())
     }
 
-    fn process_file(path: &Path, sources: &mut Vec<Buffered<Decoder<BufReader<File>>>>) -> Result<(), Box<dyn Error>> {
+    fn process_file(path: &Path) -> Result<SamplesConverter<Buffered<Decoder<BufReader<File>>>, f32>, Box<dyn Error>> {
+        if !path.is_file() {
+            return Err(Box::from("Not a file"));
+        }
+        let metadata = fs::metadata(&path)?;
+        let file_size_in_bytes = metadata.len();
+        if file_size_in_bytes > 30 * 1024 * 1024 {
+            return Err(Box::from("File is larger than 30 MB"));
+        }
         let file = BufReader::new(File::open(path)?);
-        if let Ok(decoder) = Decoder::new(file) {
-            if decoder.total_duration().unwrap_or_default() <= std::time::Duration::from_secs(5) {
-                sources.push(decoder.buffered());
+        let decoder = Decoder::new(file)?;
+        if let Ok(duration) = Self::duration(path) {
+            if duration <= Duration::from_secs(5) {
+                return Ok(decoder.buffered().convert_samples());
             }
         }
-        Ok(())
+
+        return Err(Box::from("Nothing found"));
+    }
+
+    fn duration(path: &Path) -> Result<Duration, Box<dyn Error>> {
+        let file = BufReader::new(File::open(path)?);
+        let decoder = Decoder::new(file)?;
+        return if let Some(duration) = decoder.total_duration() {
+            Ok(duration)
+        } else if let Some(duration) = MediaFileMetadata::new(&path)?._duration {
+            Ok(Duration::from_secs_f64(duration))
+        } else {
+            Err(Box::from("No duration found"))
+        }
     }
 }

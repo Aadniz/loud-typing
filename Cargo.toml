@@ -9,5 +9,6 @@ edition = "2021"
 inputbot = "0.6"
 rodio = "0.17"
 device_query = "1.1"
-time = "0.3.30"
-rand = "0.8.5"
+time = "0.3"
+rand = "0.8"
+metadata = { git = "https://github.com/D3faIt/metadata.git" }

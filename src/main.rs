@@ -39,9 +39,9 @@ fn main() {
         // Check for key down events
         for key in &keys {
             if key_states.get(key).is_none() {
-                key_down(*key, &player).map_err(|err|
+                let _ = key_down(*key, &player).map_err(|err|
                     eprintln!("ERROR: {}", err)
-                ).unwrap();
+                );
                 key_states.insert(*key, true);
             }
         }
@@ -55,6 +55,6 @@ fn main() {
             }
         }
 
-        thread::sleep(Duration::from_millis(1));
+        thread::sleep(Duration::from_millis(10));
     }
 }
