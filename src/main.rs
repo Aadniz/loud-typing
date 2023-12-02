@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 use crate::player::SoundPlayer;
 use espanso_detect;
 use espanso_detect::event::{InputEvent, Status};
-use espanso_detect::{Source, SourceCallback};
+use espanso_detect::{Source, SourceCallback, SourceCreationOptions};
 
 
 fn key_up() {
@@ -47,8 +47,16 @@ fn main() {
         args
     };
 
+    let options = SourceCreationOptions {
+        use_evdev: true,
+        evdev_keyboard_rmlvo: None,
+        hotkeys: vec![],
+        win32_exclude_orphan_events: false,
+        win32_keyboard_layout_cache_interval: 2000,
+    };
+
     // Get device events
-    let mut source : Box<dyn Source> = espanso_detect::get_source(Default::default()).unwrap();
+    let mut source : Box<dyn Source> = espanso_detect::get_source(options).unwrap();
 
     // Initialize the source
     if let Err(e) = source.initialize() {
