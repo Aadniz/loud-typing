@@ -45,12 +45,10 @@ impl SoundPlayer {
         })
     }
 
-    pub fn play(&self) -> Result<(), Box<dyn Error>> {
+    pub fn play(&self) {
         if let Some(source) = self.audio_sources.choose(&mut rand::thread_rng()) {
-            self.handle.play_raw(source.clone())?;
+            self.handle.play_raw(source.clone()).unwrap();
         }
-
-        Ok(())
     }
 
     fn process_file(path: &Path) -> Result<SamplesConverter<Buffered<Decoder<BufReader<File>>>, f32>, Box<dyn Error>> {

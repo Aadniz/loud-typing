@@ -1,27 +1,42 @@
 mod player;
 
-use device_query::{DeviceQuery, DeviceState, Keycode};
-use std::collections::HashMap;
-use std::error::Error;
-use std::thread;
 use std::env;
-use std::time::Duration;
+use std::sync::{Arc, Mutex};
 use crate::player::SoundPlayer;
+use espanso_detect;
+use espanso_detect::event::{InputEvent, Status};
+use espanso_detect::{Source, SourceCallback};
 
 
-fn key_up(_key: Keycode) {
+fn key_up() {
 
 }
 
-fn key_down(_key: Keycode, player: &SoundPlayer) -> Result<(), Box<dyn Error>> {
-    player.play()?;
+fn key_down(_key: InputEvent, player_mutex: Arc<Mutex<SoundPlayer>>) {
+    if let Ok(player) = player_mutex.lock() {
+        player.play();
+    }
+}
 
-    Ok(())
+fn handle_event(event : InputEvent, player : Arc<Mutex<SoundPlayer>>) {
+    match event {
+        InputEvent::Mouse(key) => {
+            match key.status {
+                Status::Pressed => key_down(InputEvent::Mouse(key), player),
+                Status::Released => key_up()
+            }
+        },
+        InputEvent::Keyboard(key) => {
+            match key.status {
+                Status::Pressed => key_down(InputEvent::Keyboard(key), player),
+                Status::Released => key_up()
+            }
+        },
+        _ => ()
+    }
 }
 
 fn main() {
-    let device_state = DeviceState::new();
-    let mut key_states: HashMap<Keycode, bool> = HashMap::new();
 
     let args: Vec<String> = env::args().skip(1).collect();
     let paths = if args.is_empty() {
@@ -32,29 +47,20 @@ fn main() {
         args
     };
 
-    let player = SoundPlayer::new(paths).unwrap();
-    loop {
-        let keys: Vec<Keycode> = device_state.get_keys();
+    // Get device events
+    let mut source : Box<dyn Source> = espanso_detect::get_source(Default::default()).unwrap();
 
-        // Check for key down events
-        for key in &keys {
-            if key_states.get(key).is_none() {
-                let _ = key_down(*key, &player).map_err(|err|
-                    eprintln!("ERROR: {}", err)
-                );
-                key_states.insert(*key, true);
-            }
-        }
+    // Initialize the source
+    if let Err(e) = source.initialize() {
+        eprintln!("Failed to initialize source: {:?}", e);
+    }
 
-        // Check for key up events
-        let keys_up: Vec<Keycode> = key_states.keys().cloned().collect();
-        for key in keys_up {
-            if !keys.contains(&key) {
-                key_up(key);
-                key_states.remove(&key);
-            }
-        }
+    // Define the callback function
+    let player = Arc::new(Mutex::new(SoundPlayer::new(paths).unwrap()));
+    let callback: SourceCallback = Box::new(move |event| handle_event(event, Arc::clone(&player)));
 
-        thread::sleep(Duration::from_millis(10));
+    // Start the event loop
+    if let Err(e) = source.eventloop(callback) {
+        eprintln!("Failed to start event loop: {:?}", e);
     }
 }
