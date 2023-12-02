@@ -45,7 +45,12 @@ impl SoundPlayer {
         })
     }
 
-    pub fn play(&self) {
+    pub fn play(&self, code: u32) {
+        let index = (code as usize) % self.audio_sources.len();
+        self.handle.play_raw(self.audio_sources[index].clone()).unwrap();
+    }
+
+    pub fn play_random(&self){
         if let Some(source) = self.audio_sources.choose(&mut rand::thread_rng()) {
             self.handle.play_raw(source.clone()).unwrap();
         }
