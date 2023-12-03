@@ -15,7 +15,7 @@ use crate::player::SoundPlayer;
 #[clap(version = "1.0", author = "D3faIt")]
 struct Cli {
     /// One or multiple audio files or one or multiple directories containing audio files
-    #[clap(name = "INPUT", default_value = "./sounds")]
+    #[clap(name = "INPUT", default_value = "./sounds/minecraft/villagers")]
     input: Vec<PathBuf>,
 
     /// Play sounds in random order
@@ -55,7 +55,6 @@ fn key_down(event: InputEvent, player_mutex: Arc<Mutex<SoundPlayer>>, random: bo
             player.play(code);
         }
     }
-
 }
 
 fn handle_event(event : InputEvent, player : Arc<Mutex<SoundPlayer>>, random: bool) {
