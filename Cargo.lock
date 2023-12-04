@@ -717,6 +717,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
 
 [[package]]
+name = "loud-typing"
+version = "0.1.0"
+dependencies = [
+ "clap 4.4.10",
+ "espanso-detect",
+ "metadata",
+ "rand",
+ "rodio",
+ "time",
+]
+
+[[package]]
 name = "mach2"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1421,18 +1433,6 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
-
-[[package]]
-name = "villager-noises"
-version = "0.1.0"
-dependencies = [
- "clap 4.4.10",
- "espanso-detect",
- "metadata",
- "rand",
- "rodio",
- "time",
-]
 
 [[package]]
 name = "walkdir"

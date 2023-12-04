@@ -11,16 +11,35 @@ use espanso_detect::{Source, SourceCallback};
 use crate::player::SoundPlayer;
 
 /// Loud typing
+///
+/// Trigger noises when you type
 #[derive(Parser)]
-#[clap(version = "1.0", author = "D3faIt")]
+#[clap(version = "1.0", author, about, long_about = None)]
 struct Cli {
     /// One or multiple audio files or one or multiple directories containing audio files
     #[clap(name = "INPUT", default_value = "./sounds/minecraft/villagers")]
     input: Vec<PathBuf>,
 
     /// Play sounds in random order
-    #[clap(short, long)]
-    random: bool
+    #[clap(short, long, default_value = "false")]
+    random: bool,
+
+    /// Play sounds with a random pitch
+    #[clap(short, long, default_value = "false")]
+    pitch: bool,
+
+    /// Set the amount of pitch deviation from 0 - 0.99
+    #[clap(short = 'd', long, default_value = "0.2", value_parser = validate_pitch_deviation)]
+    pitch_deviation: f32
+}
+
+fn validate_pitch_deviation(val: &str) -> Result<f32, String> {
+    let pitch_deviation: f32 = val.parse().map_err(|_| "Pitch deviation must be a number")?;
+    if pitch_deviation < 0.0 || pitch_deviation > 0.99 {
+        Err("Pitch deviation must be between 0 and 0.99".to_string())
+    } else {
+        Ok(pitch_deviation)
+    }
 }
 
 
@@ -31,7 +50,7 @@ fn key_up() {
 fn key_down(event: InputEvent, player_mutex: Arc<Mutex<SoundPlayer>>, random: bool) {
     if let Ok(player) = player_mutex.lock() {
         if random {
-            player.play_random();
+            player.play(0);
         }else{
             let code = match event {
                 InputEvent::Mouse(key) => {
@@ -90,8 +109,12 @@ fn main() {
     }
 
     // Define the callback function
-    let player = Arc::new(Mutex::new(SoundPlayer::new(paths).unwrap()));
-    let callback: SourceCallback = Box::new(move |event| handle_event(event, Arc::clone(&player), cli.random));
+    let player = SoundPlayer::new(paths).unwrap()
+        .random_select(cli.random)
+        .random_pitch(cli.pitch)
+        .pitch_deviation(cli.pitch_deviation);
+    let player_mutex = Arc::new(Mutex::new(player));
+    let callback: SourceCallback = Box::new(move |event| handle_event(event, Arc::clone(&player_mutex), cli.random));
 
     // Start the event loop
     if let Err(e) = source.eventloop(callback) {

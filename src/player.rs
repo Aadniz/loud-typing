@@ -9,10 +9,24 @@ use rodio::{Decoder, OutputStream, OutputStreamHandle, Source};
 use rand::seq::SliceRandom;
 use rodio::source::{Buffered, SamplesConverter};
 
+fn default_options() -> PlayerOptions {
+    PlayerOptions {
+        random: false,
+        random_pitch: false,
+        pitch_deviation: 0.2
+    }
+}
+struct PlayerOptions {
+    random: bool,
+    random_pitch: bool,
+    pitch_deviation: f32
+}
+
 pub struct SoundPlayer {
     _stream: OutputStream,
     handle: OutputStreamHandle,
     audio_sources: Vec<SamplesConverter<Buffered<Decoder<BufReader<File>>>, f32>>,
+    options: PlayerOptions
 }
 
 impl SoundPlayer {
@@ -42,17 +56,44 @@ impl SoundPlayer {
             _stream: stream,
             handle,
             audio_sources: sources,
+            options: default_options(),
         })
     }
 
-    pub fn play(&self, code: u32) {
-        let index = (code as usize) % self.audio_sources.len();
-        self.handle.play_raw(self.audio_sources[index].clone()).unwrap();
+    pub fn random_select(mut self, state: bool) -> Self {
+        self.options.random = state;
+        self
     }
 
-    pub fn play_random(&self){
-        if let Some(source) = self.audio_sources.choose(&mut rand::thread_rng()) {
-            self.handle.play_raw(source.clone()).unwrap();
+    pub fn random_pitch(mut self, state: bool) -> Self {
+        self.options.random_pitch = state;
+        self
+    }
+
+    pub fn pitch_deviation(mut self, value: f32) -> Self {
+        self.options.pitch_deviation = value;
+        self
+    }
+
+    pub fn play(&self, code: u32) {
+        if self.audio_sources.is_empty() {
+            return;
+        }
+
+        let audio = if self.options.random {
+            self.audio_sources.choose(&mut rand::thread_rng()).cloned().unwrap_or_else(|| self.audio_sources[0].clone())
+        } else {
+            let index = (code as usize) % self.audio_sources.len();
+            self.audio_sources[index].clone()
+        };
+
+        if self.options.random_pitch {
+            let pitch = 1.0 - self.options.pitch_deviation + rand::random::<f32>() * self.options.pitch_deviation * 2.0;
+
+            let source = audio.speed(pitch);
+            self.handle.play_raw(source).unwrap();
+        } else {
+            self.handle.play_raw(audio).unwrap();
         }
     }
 
