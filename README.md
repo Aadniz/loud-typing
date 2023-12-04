@@ -6,6 +6,18 @@ Make random noises when you type
     <img src="images/Villagers2.png" width="60%" alt="Villager"/>
 </div>
 
+## Installation
+
+*Note: only tested working on linux*
+
+```
+$ git clone https://github.com/D3faIt/loud-typing.git
+$ cd loud-typing
+$ cargo build --release
+```
+
+The executable is now located in `./target/release/loud-typing`
+
 ## Usage
 
 ```bash
