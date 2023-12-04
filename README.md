@@ -3,7 +3,7 @@
 Make random noises when you type
 
 <div style="text-align:center">
-    <img src="images/Villagers.png" alt="Villager"/>
+    <img src="images/Villagers2.png" width="60%" alt="Villager"/>
 </div>
 
 ## Usage
