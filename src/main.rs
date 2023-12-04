@@ -47,46 +47,41 @@ fn key_up() {
 
 }
 
-fn key_down(event: InputEvent, player_mutex: Arc<Mutex<SoundPlayer>>, random: bool) {
+fn key_down(event: InputEvent, player_mutex: Arc<Mutex<SoundPlayer>>) {
     if let Ok(player) = player_mutex.lock() {
-        if random {
-            player.play(0);
-        }else{
-            let code = match event {
-                InputEvent::Mouse(key) => {
-                    match key.button {
-                        MouseButton::Left => 0,
-                        MouseButton::Right => 1,
-                        MouseButton::Middle => 2,
-                        MouseButton::Button1 => 3,
-                        MouseButton::Button2 => 4,
-                        MouseButton::Button3 => 5,
-                        MouseButton::Button4 => 6,
-                        MouseButton::Button5 => 7
-                    }
-                },
-                InputEvent::Keyboard(key) => {
-                    key.code
-                },
-                _ => 0
-            };
-
-            player.play(code);
-        }
+        let code = match event {
+            InputEvent::Mouse(key) => {
+                match key.button {
+                    MouseButton::Left => 0,
+                    MouseButton::Right => 1,
+                    MouseButton::Middle => 2,
+                    MouseButton::Button1 => 3,
+                    MouseButton::Button2 => 4,
+                    MouseButton::Button3 => 5,
+                    MouseButton::Button4 => 6,
+                    MouseButton::Button5 => 7
+                }
+            },
+            InputEvent::Keyboard(key) => {
+                key.code
+            },
+            _ => 0
+        };
+        player.play(code);
     }
 }
 
-fn handle_event(event : InputEvent, player : Arc<Mutex<SoundPlayer>>, random: bool) {
+fn handle_event(event : InputEvent, player : Arc<Mutex<SoundPlayer>>) {
     match event {
         InputEvent::Mouse(key) => {
             match key.status {
-                Status::Pressed => key_down(InputEvent::Mouse(key), player, random),
+                Status::Pressed => key_down(InputEvent::Mouse(key), player),
                 Status::Released => key_up()
             }
         },
         InputEvent::Keyboard(key) => {
             match key.status {
-                Status::Pressed => key_down(InputEvent::Keyboard(key), player, random),
+                Status::Pressed => key_down(InputEvent::Keyboard(key), player),
                 Status::Released => key_up()
             }
         },
@@ -114,7 +109,7 @@ fn main() {
         .random_pitch(cli.pitch)
         .pitch_deviation(cli.pitch_deviation);
     let player_mutex = Arc::new(Mutex::new(player));
-    let callback: SourceCallback = Box::new(move |event| handle_event(event, Arc::clone(&player_mutex), cli.random));
+    let callback: SourceCallback = Box::new(move |event| handle_event(event, Arc::clone(&player_mutex)));
 
     // Start the event loop
     if let Err(e) = source.eventloop(callback) {
