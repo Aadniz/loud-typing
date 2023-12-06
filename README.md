@@ -18,6 +18,10 @@ $ cargo build --release
 
 The executable is now located in `./target/release/loud-typing`
 
+### Wayland
+
+Please use the `evdev` branch for wayland. Tested working on KDE Plasma. Does not work on Sway for some reason
+
 ## Usage
 
 ```bash
