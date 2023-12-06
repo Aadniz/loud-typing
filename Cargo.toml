@@ -1,7 +1,8 @@
 [package]
-name = "villager-noises"
+name = "loud-typing"
 version = "0.1.0"
 edition = "2021"
+authors = ["D3faIt"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -11,3 +12,4 @@ time = "0.3"
 rand = "0.8"
 metadata = { git = "https://github.com/D3faIt/metadata.git", features = ["static"] }
 espanso-detect = {path = "libs/espanso-detect"}
+clap = { version = "4.4.10", features = ["derive"] }
