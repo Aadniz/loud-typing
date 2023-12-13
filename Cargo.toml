@@ -10,6 +10,5 @@ authors = ["D3faIt"]
 rodio = "0.17"
 time = "0.3"
 rand = "0.8"
-metadata = { git = "https://github.com/D3faIt/metadata.git", features = ["static"] }
 espanso-detect = {path = "libs/espanso-detect"}
 clap = { version = "4.4.10", features = ["derive"] }

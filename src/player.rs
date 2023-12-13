@@ -3,8 +3,6 @@ use std::fs;
 use std::fs::{File, read_dir};
 use std::io::{BufReader};
 use std::path::Path;
-use std::time::Duration;
-use metadata::MediaFileMetadata;
 use rodio::{Decoder, OutputStream, OutputStreamHandle, Source};
 use rand::seq::SliceRandom;
 use rodio::source::{Buffered, SamplesConverter};
@@ -108,24 +106,7 @@ impl SoundPlayer {
         }
         let file = BufReader::new(File::open(path)?);
         let decoder = Decoder::new(file)?;
-        if let Ok(duration) = Self::duration(path) {
-            if duration <= Duration::from_secs(5) {
-                return Ok(decoder.buffered().convert_samples());
-            }
-        }
 
-        return Err(Box::from("Nothing found"));
-    }
-
-    fn duration(path: &Path) -> Result<Duration, Box<dyn Error>> {
-        let file = BufReader::new(File::open(path)?);
-        let decoder = Decoder::new(file)?;
-        return if let Some(duration) = decoder.total_duration() {
-            Ok(duration)
-        } else if let Some(duration) = MediaFileMetadata::new(&path)?._duration {
-            Ok(Duration::from_secs_f64(duration))
-        } else {
-            Err(Box::from("No duration found"))
-        }
+        return Ok(decoder.buffered().convert_samples());
     }
 }

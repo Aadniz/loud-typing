@@ -96,7 +96,7 @@ fn main() {
     let paths: Vec<String> = cli.input.iter().map(|path| path.display().to_string()).collect();
 
     let options = SourceCreationOptions {
-        use_evdev: true,
+        use_evdev: false,
         evdev_keyboard_rmlvo: None,
         hotkeys: vec![],
         win32_exclude_orphan_events: false,
