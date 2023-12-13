@@ -1,3 +1,5 @@
+*This branch are able to detect duration of all audio files*
+
 # Loud typing
 
 Make random noises when you type
