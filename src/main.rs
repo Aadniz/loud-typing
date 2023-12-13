@@ -6,7 +6,7 @@ use clap;
 use clap::Parser;
 use espanso_detect;
 use espanso_detect::event::{InputEvent, MouseButton, Status};
-use espanso_detect::{Source, SourceCallback, SourceCreationOptions};
+use espanso_detect::{Source, SourceCallback};
 
 use crate::player::SoundPlayer;
 
@@ -95,16 +95,8 @@ fn main() {
     // Get the path options
     let paths: Vec<String> = cli.input.iter().map(|path| path.display().to_string()).collect();
 
-    let options = SourceCreationOptions {
-        use_evdev: false,
-        evdev_keyboard_rmlvo: None,
-        hotkeys: vec![],
-        win32_exclude_orphan_events: false,
-        win32_keyboard_layout_cache_interval: 2000,
-    };
-
     // Get device events
-    let mut source : Box<dyn Source> = espanso_detect::get_source(options).unwrap();
+    let mut source : Box<dyn Source> = espanso_detect::get_source(Default::default()).unwrap();
 
     // Initialize the source
     if let Err(e) = source.initialize() {
