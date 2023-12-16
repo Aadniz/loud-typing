@@ -8,7 +8,7 @@ Make random noises when you type
 
 ## Installation
 
-*Note: only tested working on linux*
+*Requires cargo and g++*
 
 ```
 $ git clone https://github.com/D3faIt/loud-typing.git
