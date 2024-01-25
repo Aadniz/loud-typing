@@ -11,7 +11,7 @@ Make random noises when you type
 *Requires cargo and g++*
 
 ```
-$ git clone https://github.com/D3faIt/loud-typing.git
+$ git clone https://github.com/Aadniz/loud-typing.git
 $ cd loud-typing
 $ cargo build --release
 ```
