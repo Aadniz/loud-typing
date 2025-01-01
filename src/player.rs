@@ -1,30 +1,30 @@
 use std::error::Error;
-use std::fs;
-use std::fs::{File, read_dir};
-use std::io::{BufReader};
-use std::path::Path;
-use rodio::{Decoder, OutputStream, OutputStreamHandle, Source};
 use rand::seq::SliceRandom;
 use rodio::source::{Buffered, SamplesConverter};
+use rodio::{Decoder, OutputStream, OutputStreamHandle, Source};
+use std::fs;
+use std::fs::{read_dir, File};
+use std::io::BufReader;
+use std::path::Path;
 
 fn default_options() -> PlayerOptions {
     PlayerOptions {
         random: false,
         random_pitch: false,
-        pitch_deviation: 0.2
+        pitch_deviation: 0.2,
     }
 }
 struct PlayerOptions {
     random: bool,
     random_pitch: bool,
-    pitch_deviation: f32
+    pitch_deviation: f32,
 }
 
 pub struct SoundPlayer {
     _stream: OutputStream,
     handle: OutputStreamHandle,
     audio_sources: Vec<SamplesConverter<Buffered<Decoder<BufReader<File>>>, f32>>,
-    options: PlayerOptions
+    options: PlayerOptions,
 }
 
 impl SoundPlayer {
@@ -43,7 +43,7 @@ impl SoundPlayer {
                         sources.push(a);
                     }
                 }
-            }else {
+            } else {
                 if let Ok(a) = Self::process_file(&path) {
                     sources.push(a);
                 }
@@ -79,14 +79,18 @@ impl SoundPlayer {
         }
 
         let audio = if self.options.random {
-            self.audio_sources.choose(&mut rand::thread_rng()).cloned().unwrap_or_else(|| self.audio_sources[0].clone())
+            self.audio_sources
+                .choose(&mut rand::thread_rng())
+                .cloned()
+                .unwrap_or_else(|| self.audio_sources[0].clone())
         } else {
             let index = (code as usize) % self.audio_sources.len();
             self.audio_sources[index].clone()
         };
 
         if self.options.random_pitch {
-            let pitch = 1.0 - self.options.pitch_deviation + rand::random::<f32>() * self.options.pitch_deviation * 2.0;
+            let pitch = 1.0 - self.options.pitch_deviation
+                + rand::random::<f32>() * self.options.pitch_deviation * 2.0;
 
             let source = audio.speed(pitch);
             self.handle.play_raw(source).unwrap();
@@ -95,7 +99,9 @@ impl SoundPlayer {
         }
     }
 
-    fn process_file(path: &Path) -> Result<SamplesConverter<Buffered<Decoder<BufReader<File>>>, f32>, Box<dyn Error>> {
+    fn process_file(
+        path: &Path,
+    ) -> Result<SamplesConverter<Buffered<Decoder<BufReader<File>>>, f32>, Box<dyn Error>> {
         if !path.is_file() {
             return Err(Box::from("Not a file"));
         }
